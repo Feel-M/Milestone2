@@ -31,11 +31,16 @@ public class DBApp {
 		File Files = new File("src" + File.separator + "Files.csv");
 		boolean datafile;
 		datafile = Files.createNewFile();
+		new File("src"+ File.separator + "Tables").mkdir();
 
 		// metadata file
 		File meta = new File("src" + File.separator + "MetaData.csv");
 		boolean metafile;
 		metafile = meta.createNewFile();
+		//table
+		File f = new File("src" + File.separator + "Tables" + File.separator + strTableName + "1.csv");
+		boolean f1;
+		f1 = f.createNewFile();
 
 		if (metafile == false) {
 			FileWriter fileWriter = new FileWriter("src" + File.separator + "MetaData.csv");
@@ -128,7 +133,7 @@ public class DBApp {
 			fileWriter.write(strTableName + ",");
 			fileWriter.write("Table" + ",");
 			fileWriter.write(strTableName + "1.csv,");
-			fileWriter.write(Files.getAbsolutePath() + "\n");
+			fileWriter.write(f.getAbsolutePath() + "\n");
 			fileWriter.close();
 
 		} else {
@@ -141,13 +146,11 @@ public class DBApp {
 			fileWriter.write(strTableName + ",");
 			fileWriter.write("Table" + ",");
 			fileWriter.write(strTableName + "1.csv,");
-			fileWriter.write(Files.getAbsolutePath() + "\n");
+			fileWriter.write(f.getAbsolutePath() + "\n");
 			fileWriter.close();
 		}
 
-		File f = new File("src" + File.separator + "Tables" + File.separator + strTableName + "1.csv");
-		boolean f1;
-		f1 = f.createNewFile();
+		
 
 		if (f1 == false) {
 			throw new DBAppException("TABLE ALREADY EXISTS!");
@@ -577,7 +580,7 @@ public class DBApp {
 		htblColNameType.put("id", "java.lang.Integer");
 		htblColNameType.put("name", "java.lang.String");
 		htblColNameType.put("gpa", "java.lang.Double");
-		 //dbApp.createTable(strTableName, "id", htblColNameType, htblColmin, htblColmax);
+		 dbApp.createTable(strTableName, "id", htblColNameType, htblColmin, htblColmax);
 
 		htblColNameValue.put("id", new Integer(2343432));
 		htblColNameValue.put("name", new String("Ahmed Noor"));
@@ -598,9 +601,9 @@ public class DBApp {
 
 		 //dbApp.insertIntoTable( strTableName , htblColNameValue );
 		// System.out.println(htblColNameValue);
-		dbApp.deleteFromTable("Student", htblColNameValue);
+		//dbApp.deleteFromTable("Student", htblColNameValue);
 	//	 dbApp.updateTable("Student", "20", htblColNameValue);
 
-		System.out.println();
+		System.out.println(File.separator);
 	}
 }
