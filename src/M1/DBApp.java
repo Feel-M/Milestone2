@@ -432,11 +432,16 @@ public class DBApp {
 						}
 					}
 					fw.close();
-					new File("src" + File.separator + "Tables" + File.separator + current).delete();
+					br.close();
+					File deletFile = 	new File("src" + File.separator + "Tables" + File.separator + current);
+					deletFile.canWrite();
+					deletFile.delete();
 
-					new File("src" + File.separator + "Tables" + File.separator + newfile)
-							.renameTo(new File("src" + File.separator + "Tables" + File.separator + current));
+				
 
+					File renamefile = new File("src" + File.separator + "Tables" + File.separator + newfile);
+					renamefile.canWrite();
+					renamefile.renameTo(new File("src" + File.separator + "Tables" + File.separator + current));
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -480,7 +485,7 @@ public class DBApp {
 					while ((line = br.readLine()) != null) {
 
 						String[] indexed = line.split(",");
-						if (indexed.equals(null)) {
+						if (line.equals("")) {
 							break;
 						}
 						boolean f1 = nf.createNewFile();
@@ -492,6 +497,7 @@ public class DBApp {
 
 					}
 					fw.close();
+					br.close();
 					new File("src" + File.separator + "Tables" + File.separator + current).delete();
 
 					File endfile = new File("src" + File.separator + "Tables" + File.separator + newfile);
@@ -571,8 +577,7 @@ public class DBApp {
 		htblColNameType.put("id", "java.lang.Integer");
 		htblColNameType.put("name", "java.lang.String");
 		htblColNameType.put("gpa", "java.lang.Double");
-		// dbApp.createTable(strTableName, "id", htblColNameType, htblColmin,
-		// htblColmax);
+		 //dbApp.createTable(strTableName, "id", htblColNameType, htblColmin, htblColmax);
 
 		htblColNameValue.put("id", new Integer(2343432));
 		htblColNameValue.put("name", new String("Ahmed Noor"));
@@ -586,15 +591,15 @@ public class DBApp {
 		// htblColNameValue.clear( );
 		htblColNameValue.put("id", new Integer(13));
 		htblColNameValue.put("name", new String("Dalia Noor"));
-		htblColNameValue.put("gpa", new Double(1.25)); //
+		htblColNameValue.put("gpa", new Double(1.76)); //
 		// htblColNameValue.put("id", new Integer(20));
-		// htblColNameValue.put("name", new String("mostafa"));
-		// htblColNameValue.put("gpa", new Double(1.30)); //
+		 //htblColNameValue.put("name", new String("mostafa"));
+		 //htblColNameValue.put("gpa", new Double(1.40)); //
 
-		// dbApp.insertIntoTable( strTableName , htblColNameValue );
+		 //dbApp.insertIntoTable( strTableName , htblColNameValue );
 		// System.out.println(htblColNameValue);
 		dbApp.deleteFromTable("Student", htblColNameValue);
-		// dbApp.updateTable("Student", "20", htblColNameValue);
+	//	 dbApp.updateTable("Student", "20", htblColNameValue);
 
 		System.out.println();
 	}
