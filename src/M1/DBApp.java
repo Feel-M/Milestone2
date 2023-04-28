@@ -186,6 +186,9 @@ public class DBApp {
 		long count = 0;
 		String clusterKey = "";
 		String line = "";
+		int clusterkeyindex= 0;
+		boolean flag = false;
+		String path = "";
 
 		try {
 			if (file.exists()) {
@@ -211,6 +214,13 @@ public class DBApp {
 							}
 							Double min = (Double.parseDouble(indexed[6]));
 							Double max = (Double.parseDouble(indexed[7]));
+							if (indexed[0].equals(strTableName) && flag == false) {
+								clusterkeyindex++;
+								if (indexed[3].equals("True") ) {
+									flag = true;
+									clusterkeyindex -=1;
+								}
+							}
 
 							if ((htblColNameValue.get(key).getClass().getName()).equals("java.lang.String")
 									&& indexed[1].equals(key) && indexed[0].equals(strTableName)) {
@@ -251,6 +261,7 @@ public class DBApp {
 				}
 
 				for (int i = 1; i <= 10; i++) {
+					path = "src" + File.separator + "Tables" + File.separator + strTableName + i + ".csv";
 					File check = new File(
 							"src" + File.separator + "Tables" + File.separator + strTableName + i + ".csv");
 					if (check.exists()) {
@@ -292,11 +303,12 @@ public class DBApp {
 
 							while (e.hasMoreElements()) {
 								String key = e.nextElement();
-								bw.write(htblColNameValue.get(key) + ",");
+								fileWriter.write(htblColNameValue.get(key) + ",");
 							}
-							bw.write("\n");
-							bw.flush();
-							bw.close();
+							fileWriter.write("\n");
+							fileWriter.flush();
+							fileWriter.close();
+							sorter(clusterkeyindex , path);
 							break;
 
 						} else {
@@ -472,6 +484,50 @@ public class DBApp {
 		return result;
 	}
 
+	public static void sorter(int index,String path) throws IOException {
+		Hashtable<Object, String> rows = new Hashtable<Object, String>();
+
+
+		BufferedReader reader = new BufferedReader(new FileReader(path));
+		String line;
+		String newfile = "new.csv";
+		FileWriter fw = new FileWriter("src" + File.separator + "Tables" + File.separator + newfile);
+
+
+		while ((line = reader.readLine()) != null) {
+		   String[] indexed = line.split(",");
+		   rows.put(indexed[index], line);
+		  
+		}
+		reader.close();
+		
+		
+		TreeMap<Object, String> tm
+		= new TreeMap<Object, String>(rows);
+
+	// create a keyset
+	Set<Object> keys = tm.keySet();
+	Iterator<Object> itr = keys.iterator();
+
+	// traverse the TreeMap using iterator
+	while (itr.hasNext()) {
+		Object i = itr.next();
+		fw.write(rows.get(i) + "\n");
+		
+	}
+	fw.close();
+	new File(path).delete();
+
+					File endfile = new File("src" + File.separator + "Tables" + File.separator + newfile);
+					endfile.renameTo(new File(path));
+		
+	 }
+  
+  
+	 
+  
+
+
 	public static void main(String[] args) throws IOException, DBAppException {
 
 		DBApp dbApp = new DBApp();
@@ -508,7 +564,7 @@ public class DBApp {
 		Hashtable htblColmin = new Hashtable();
 		Hashtable htblColmax = new Hashtable();
 
-		htblColmin.put("id", "0");
+		htblColmin.put("id", "3");
 		htblColmin.put("gpa", "0");
 		htblColmin.put("name", "0");
 		htblColmax.put("id", "10");
@@ -517,8 +573,7 @@ public class DBApp {
 		htblColNameType.put("id", "java.lang.Integer");
 		htblColNameType.put("name", "java.lang.String");
 		htblColNameType.put("gpa", "java.lang.Double");
-		// dbApp.createTable(strTableName, "id", htblColNameType, htblColmin,
-		// htblColmax);
+		//dbApp.createTable(strTableName, "id", htblColNameType, htblColmin,htblColmax);
 
 		htblColNameValue.put("id", new Integer(2343432));
 		htblColNameValue.put("name", new String("Ahmed Noor"));
@@ -536,7 +591,7 @@ public class DBApp {
 		// htblColNameValue.put("id", new Integer(20));
 		// htblColNameValue.put("name", new String("mostafa"));
 		// htblColNameValue.put("gpa", new Double(1.40)); //
-		htblColNameValue.put("id", new Integer(5));
+		htblColNameValue.put("id", new Integer(1));
 		htblColNameValue.put("name", new String("Zaky Noor"));
 		htblColNameValue.put("gpa", new Double(0.78));
 
@@ -546,5 +601,6 @@ public class DBApp {
 		// dbApp.updateTable("Student", "20", htblColNameValue);
 
 		System.out.println(File.separator);
+		//sorter(3, "src" + File.separator + "Tables" + File.separator + strTableName +   "1.csv");
 	}
 }
