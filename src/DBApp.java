@@ -1,6 +1,3 @@
-package M1;
-
-import exceptions.DBAppException;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -186,7 +183,7 @@ public class DBApp {
 		long count = 0;
 		String clusterKey = "";
 		String line = "";
-		int clusterkeyindex= 0;
+		int clusterkeyindex = 0;
 		boolean flag = false;
 		String path = "";
 
@@ -194,7 +191,7 @@ public class DBApp {
 			if (file.exists()) {
 
 				try {
-
+					// start
 					Enumeration<String> hash = htblColNameValue.keys();
 
 					while (hash.hasMoreElements()) {
@@ -216,9 +213,9 @@ public class DBApp {
 							Double max = (Double.parseDouble(indexed[7]));
 							if (indexed[0].equals(strTableName) && flag == false) {
 								clusterkeyindex++;
-								if (indexed[3].equals("True") ) {
+								if (indexed[3].equals("True")) {
 									flag = true;
-									clusterkeyindex -=1;
+									clusterkeyindex -= 1;
 								}
 							}
 
@@ -255,6 +252,7 @@ public class DBApp {
 						}
 
 					}
+					// end
 				} catch (Exception e) {
 					e.printStackTrace();
 					return;
@@ -308,7 +306,7 @@ public class DBApp {
 							fileWriter.write("\n");
 							fileWriter.flush();
 							fileWriter.close();
-							sorter(clusterkeyindex , path);
+							sorter(clusterkeyindex, path);
 							break;
 
 						} else {
@@ -352,13 +350,70 @@ public class DBApp {
 	}
 
 	public void updateTable(String strTableName, String strClusteringKeyValue,
-			Hashtable<String, Object> htblColNameValue) throws DBAppException {
+			Hashtable<String, Object> htblColNameValue) throws DBAppException, IOException {
 		File file = new File("src" + File.separator + "Tables" + File.separator + strTableName + "1.csv");
+		Enumeration<String> hash = htblColNameValue.keys();
+		boolean flag = false;
+		String line = "";
 		if (file.exists()) {
+			// here\
+			try {
+				while (hash.hasMoreElements()) {
+					String hashkey = hash.nextElement();
+
+					BufferedReader maxreader = new BufferedReader(
+							new FileReader("src" + File.separator + "MetaData.csv"));
+					line = maxreader.readLine();
+					while (((line = maxreader.readLine()) != null)) {
+
+						if ((line).equals("")) {
+							break;
+						}
+						String[] indexed = line.split(",");
+						Double min = (Double.parseDouble(indexed[6]));
+						Double max = (Double.parseDouble(indexed[7]));
+
+						if ((htblColNameValue.get(hashkey).getClass().getName()).equals("java.lang.String")
+								&& indexed[1].equals(hashkey) && indexed[0].equals(strTableName)) {
+							if (((String) htblColNameValue.get(hashkey)).length() < min
+									|| ((String) htblColNameValue.get(hashkey)).length() > max) {
+								System.out.println(((String) htblColNameValue.get(hashkey)).length());
+								throw new DBAppException(hashkey + " is not within Range!");
+
+							}
+
+						} else if (indexed[1].equals(hashkey) && indexed[0].equals(strTableName)) {
+							Object obj = htblColNameValue.get(hashkey);
+							String str = obj.toString();
+							double value = Double.valueOf(str).doubleValue();
+							if (value < min || value > max) {
+								throw new DBAppException(hashkey + " is not within Range!");
+
+							}
+
+							if ((htblColNameValue.get(hashkey).getClass().getName()).equals(indexed[2])
+									&& indexed[0].equals(strTableName)) {
+								continue;
+
+							} else {
+								maxreader.close();
+								throw new DBAppException("invalid Data Types");
+
+							}
+
+						}
+					}
+					maxreader.close();
+				}
+			} catch (Exception e) {
+
+				e.printStackTrace();
+				return;
+
+			}
 
 			String newfile = "new.csv";
 
-			String line = "";
 			for (int i = 1; i <= 10; i++) {
 				try (BufferedReader br = new BufferedReader(
 						new FileReader("src" + File.separator + "Tables" + File.separator + strTableName + i + ".csv"));
@@ -369,7 +424,7 @@ public class DBApp {
 					boolean f1;
 					f1 = nf.createNewFile();
 					while ((line = br.readLine()) != null) {
-						String indexed[] = line.split(",");
+						String[] indexed = line.split(",");
 
 						if (check(indexed, strClusteringKeyValue)) {
 							Enumeration<String> e = htblColNameValue.keys();
@@ -380,6 +435,7 @@ public class DBApp {
 
 							}
 							fw.write("\n");
+							flag = true;
 
 						} else {
 							fw.write(line + "\n");
@@ -394,18 +450,29 @@ public class DBApp {
 					File renamefile = new File("src" + File.separator + "Tables" + File.separator + newfile);
 					renamefile.canWrite();
 					renamefile.renameTo(new File("src" + File.separator + "Tables" + File.separator + current));
+
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+					
+				}
+				if (flag) {
+					return;
 				}
 
 			}
 
-		} else {
-			throw new DBAppException("FILE DOESNT EXIST!");
-
 		}
+		else
+
+	{
+		throw new DBAppException("FILE DOESNT EXIST!");
+
 	}
+	}
+
+	
+
 
 	public void deleteFromTable(String strTableName, Hashtable<String, Object> htblColNameValue)
 			throws DBAppException {
@@ -484,49 +551,40 @@ public class DBApp {
 		return result;
 	}
 
-	public static void sorter(int index,String path) throws IOException {
+	public static void sorter(int index, String path) throws IOException {
 		Hashtable<Object, String> rows = new Hashtable<Object, String>();
-
 
 		BufferedReader reader = new BufferedReader(new FileReader(path));
 		String line;
 		String newfile = "new.csv";
 		FileWriter fw = new FileWriter("src" + File.separator + "Tables" + File.separator + newfile);
 
-
 		while ((line = reader.readLine()) != null) {
-		   String[] indexed = line.split(",");
-		   rows.put(indexed[index], line);
-		  
+			String[] indexed = line.split(",");
+			rows.put(indexed[index], line);
+
 		}
 		reader.close();
-		
-		
-		TreeMap<Object, String> tm
-		= new TreeMap<Object, String>(rows);
 
-	// create a keyset
-	Set<Object> keys = tm.keySet();
-	Iterator<Object> itr = keys.iterator();
+		TreeMap<Object, String> tm = new TreeMap<Object, String>(rows);
 
-	// traverse the TreeMap using iterator
-	while (itr.hasNext()) {
-		Object i = itr.next();
-		fw.write(rows.get(i) + "\n");
-		
+		// create a keyset
+		Set<Object> keys = tm.keySet();
+		Iterator<Object> itr = keys.iterator();
+
+		// traverse the TreeMap using iterator
+		while (itr.hasNext()) {
+			Object i = itr.next();
+			fw.write(rows.get(i) + "\n");
+
+		}
+		fw.close();
+		new File(path).delete();
+
+		File endfile = new File("src" + File.separator + "Tables" + File.separator + newfile);
+		endfile.renameTo(new File(path));
+
 	}
-	fw.close();
-	new File(path).delete();
-
-					File endfile = new File("src" + File.separator + "Tables" + File.separator + newfile);
-					endfile.renameTo(new File(path));
-		
-	 }
-  
-  
-	 
-  
-
 
 	public static void main(String[] args) throws IOException, DBAppException {
 
@@ -556,7 +614,7 @@ public class DBApp {
 		// System.out.println(DBApp.Tables);
 		// dbApp.updateTable("table", "age", map2);
 		// dbApp.deleteFromTable("table", map2);
-		String strTableName = "Student";
+		String strTableName = "Man";
 		Hashtable htblColNameType = new Hashtable();
 		Hashtable max = new Hashtable();
 		Hashtable min = new Hashtable();
@@ -573,7 +631,8 @@ public class DBApp {
 		htblColNameType.put("id", "java.lang.Integer");
 		htblColNameType.put("name", "java.lang.String");
 		htblColNameType.put("gpa", "java.lang.Double");
-		//dbApp.createTable(strTableName, "id", htblColNameType, htblColmin,htblColmax);
+		// dbApp.createTable(strTableName, "name", htblColNameType,
+		// htblColmin,htblColmax);
 
 		htblColNameValue.put("id", new Integer(2343432));
 		htblColNameValue.put("name", new String("Ahmed Noor"));
@@ -591,16 +650,17 @@ public class DBApp {
 		// htblColNameValue.put("id", new Integer(20));
 		// htblColNameValue.put("name", new String("mostafa"));
 		// htblColNameValue.put("gpa", new Double(1.40)); //
-		htblColNameValue.put("id", new Integer(1));
-		htblColNameValue.put("name", new String("Zaky Noor"));
-		htblColNameValue.put("gpa", new Double(0.78));
+		htblColNameValue.put("id", new Integer(4));
+		htblColNameValue.put("name", new String("baky Noor"));
+		htblColNameValue.put("gpa", new Double(12));
 
-		dbApp.insertIntoTable(strTableName, htblColNameValue);
+		// dbApp.insertIntoTable(strTableName, htblColNameValue);
 		// System.out.println(htblColNameValue);
 		// dbApp.deleteFromTable("Man", htblColNameValue);
-		// dbApp.updateTable("Student", "20", htblColNameValue);
+		dbApp.updateTable(strTableName, "baky Noor", htblColNameValue);
 
 		System.out.println(File.separator);
-		//sorter(3, "src" + File.separator + "Tables" + File.separator + strTableName +   "1.csv");
+		// sorter(3, "src" + File.separator + "Tables" + File.separator + strTableName +
+		// "1.csv");
 	}
 }
