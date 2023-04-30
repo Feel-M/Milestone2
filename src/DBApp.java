@@ -291,7 +291,7 @@ public class DBApp {
 								br.close();
 								throw new DBAppException("Duplicates of clustering key values detected!");
 							}
-						
+
 						}
 						br.close();
 						int max = Integer.parseInt(prop.getProperty("Max"));
@@ -568,13 +568,13 @@ public class DBApp {
 		}
 		reader.close();
 
-		TreeMap<Object, String> tm = new TreeMap<Object, String>(rows);
+		TreeMap<Object, String> tmap = new TreeMap<Object, String>(rows);
 
-		// create a keyset
-		Set<Object> keys = tm.keySet();
+	
+		Set<Object> keys = tmap.keySet();
 		Iterator<Object> itr = keys.iterator();
 
-		// traverse the TreeMap using iterator
+		
 		while (itr.hasNext()) {
 			Object i = itr.next();
 			fw.write(rows.get(i) + "\n");
@@ -591,78 +591,6 @@ public class DBApp {
 	public static void main(String[] args) throws IOException, DBAppException {
 
 		DBApp dbApp = new DBApp();
-		Hashtable<String, String> map = new Hashtable<String, String>();
-		map.put("same", new String("mostafa"));
-		map.put("gender", new String("m"));
-		map.put("age", new String("19"));
-		Hashtable<String, Object> map2 = new Hashtable<String, Object>();
-		map2.put("name", new String("mostafa"));
-		map2.put("gender", new String("m"));
-		map2.put("age", new String("30"));
-
-		Enumeration<String> e = map.keys();
-
-		while (e.hasMoreElements()) {
-
-			String key = e.nextElement();
-
-			// System.out.print(map.get(key) +",");
-
-		}
-		// dbApp.Tables.put("table", 1);
-
-		// dbApp.createTable("table", "id",map,map, map) ;
-		// dbApp.add();
-		// System.out.println(DBApp.Tables);
-		// dbApp.updateTable("table", "age", map2);
-		// dbApp.deleteFromTable("table", map2);
-		String strTableName = "Man";
-		Hashtable htblColNameType = new Hashtable();
-		Hashtable max = new Hashtable();
-		Hashtable min = new Hashtable();
-		Hashtable htblColNameValue = new Hashtable();
-		Hashtable htblColmin = new Hashtable();
-		Hashtable htblColmax = new Hashtable();
-
-		htblColmin.put("id", "3");
-		htblColmin.put("gpa", "0");
-		htblColmin.put("name", "0");
-		htblColmax.put("id", "10");
-		htblColmax.put("gpa", "10");
-		htblColmax.put("name", "10");
-		htblColNameType.put("id", "java.lang.Integer");
-		htblColNameType.put("name", "java.lang.String");
-		htblColNameType.put("gpa", "java.lang.Double");
-		// dbApp.createTable(strTableName, "name", htblColNameType,
-		// htblColmin,htblColmax);
-
-		htblColNameValue.put("id", new Integer(2343432));
-		htblColNameValue.put("name", new String("Ahmed Noor"));
-		htblColNameValue.put("gpa", new Double(0.95));
-		// dbApp.insertIntoTable( strTableName , htblColNameValue );
-		// htblColNameValue.clear();
-		// htblColNameValue.put("id", new Integer( 453455 ));
-		// htblColNameValue.put("name", new String("Ahmed Noor" ) );
-		// htblColNameValue.put("gpa", new Double( 0.95 ) ); dbApp.insertIntoTable(
-		// strTableName , htblColNameValue );
-		// htblColNameValue.clear( );
-		htblColNameValue.put("id", new Integer(13));
-		htblColNameValue.put("name", new String("Dalia Noor"));
-		htblColNameValue.put("gpa", new Double(1.76)); //
-		// htblColNameValue.put("id", new Integer(20));
-		// htblColNameValue.put("name", new String("mostafa"));
-		// htblColNameValue.put("gpa", new Double(1.40)); //
-		htblColNameValue.put("id", new Integer(4));
-		htblColNameValue.put("name", new String("abcd Noor"));
-		htblColNameValue.put("gpa", new Double(1));
-
-		dbApp.insertIntoTable(strTableName, htblColNameValue);
-		// System.out.println(htblColNameValue);
-		// dbApp.deleteFromTable("Man", htblColNameValue);
-		// dbApp.updateTable(strTableName, "baky Noor", htblColNameValue);
-
-		System.out.println(File.separator);
-		// sorter(3, "src" + File.separator + "Tables" + File.separator + strTableName +
-		// "1.csv");
+	
 	}
 }
