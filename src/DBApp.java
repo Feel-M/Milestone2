@@ -1,4 +1,3 @@
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -224,6 +223,7 @@ public class DBApp {
 								if (((String) htblColNameValue.get(key)).length() < min
 										|| ((String) htblColNameValue.get(key)).length() > max) {
 									System.out.println(((String) htblColNameValue.get(key)).length());
+
 									throw new DBAppException(key + " is not within Range!");
 
 								}
@@ -235,6 +235,7 @@ public class DBApp {
 								String str = obj.toString();
 								double value = Double.valueOf(str).doubleValue();
 								if (value < min || value > max) {
+
 									throw new DBAppException(key + " is not within Range!");
 								}
 
@@ -276,6 +277,7 @@ public class DBApp {
 						if (inputStream != null) {
 							prop.load(inputStream);
 						} else {
+							br.close();
 							throw new FileNotFoundException(
 									"property file '" + propFileName + "' not found in the classpath");
 						}
@@ -289,7 +291,9 @@ public class DBApp {
 								br.close();
 								throw new DBAppException("Duplicates of clustering key values detected!");
 							}
+						
 						}
+						br.close();
 						int max = Integer.parseInt(prop.getProperty("Max"));
 						if (count < max) {
 							FileWriter fileWriter = new FileWriter(
@@ -306,6 +310,7 @@ public class DBApp {
 							fileWriter.write("\n");
 							fileWriter.flush();
 							fileWriter.close();
+							bw.close();
 							sorter(clusterkeyindex, path);
 							break;
 
@@ -313,6 +318,7 @@ public class DBApp {
 							continue;
 
 						}
+
 					} else {
 						Boolean create = check.createNewFile();
 						FileWriter fileWriter = new FileWriter(
@@ -454,7 +460,7 @@ public class DBApp {
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-					
+
 				}
 				if (flag) {
 					return;
@@ -462,17 +468,13 @@ public class DBApp {
 
 			}
 
+		} else
+
+		{
+			throw new DBAppException("FILE DOESNT EXIST!");
+
 		}
-		else
-
-	{
-		throw new DBAppException("FILE DOESNT EXIST!");
-
 	}
-	}
-
-	
-
 
 	public void deleteFromTable(String strTableName, Hashtable<String, Object> htblColNameValue)
 			throws DBAppException {
@@ -651,13 +653,13 @@ public class DBApp {
 		// htblColNameValue.put("name", new String("mostafa"));
 		// htblColNameValue.put("gpa", new Double(1.40)); //
 		htblColNameValue.put("id", new Integer(4));
-		htblColNameValue.put("name", new String("baky Noor"));
-		htblColNameValue.put("gpa", new Double(12));
+		htblColNameValue.put("name", new String("abcd Noor"));
+		htblColNameValue.put("gpa", new Double(1));
 
-		// dbApp.insertIntoTable(strTableName, htblColNameValue);
+		dbApp.insertIntoTable(strTableName, htblColNameValue);
 		// System.out.println(htblColNameValue);
 		// dbApp.deleteFromTable("Man", htblColNameValue);
-		dbApp.updateTable(strTableName, "baky Noor", htblColNameValue);
+		// dbApp.updateTable(strTableName, "baky Noor", htblColNameValue);
 
 		System.out.println(File.separator);
 		// sorter(3, "src" + File.separator + "Tables" + File.separator + strTableName +
