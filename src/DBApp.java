@@ -175,6 +175,74 @@ public class DBApp {
 
 	}
 
+	public void createIndex(String strTableName,
+			String strColName) throws DBAppException {
+		File file = new File("src" + File.separator + "Tables" + File.separator + strTableName + "1.csv");
+		File indexfile = new File(
+				"src" + File.separator + "Indicies" + File.separator + strTableName + strColName + ".csv");
+		String line = "";
+		String[] columns;
+		String[] row;
+		String Colinfo = "";
+		List<String> coulmnlist = new ArrayList<>();
+		try {
+			if (file.exists()) {
+				if (indexfile.exists()) {
+					throw new DBAppException("Index Already Exists!");
+				}
+				BufferedReader maxreader = new BufferedReader(
+						new FileReader("src" + File.separator + "MetaData.csv"));
+				line = maxreader.readLine();
+				while (((line = maxreader.readLine()) != null)) {
+
+					if ((line).equals("")) {
+						break;
+					}
+					String[] indexed = line.split(",");
+					// Gets all columns in requested table
+					if (indexed[0].equals(strTableName)) {
+						coulmnlist.add(indexed[1]);
+					}
+					if (indexed[0].equals(strTableName) && indexed[1].equals(strColName)
+							&& !indexed[5].equals("SparseIndex")) {
+						row = indexed;
+						row[4] = strColName + "Index";
+						row[5] = "SparseIndex";
+						Colinfo = String.join(",", Colinfo);
+
+					}
+
+				}
+				// checks if coulmn exists in requested table
+				columns = coulmnlist.toArray(new String[0]);
+				if (!check(columns, strColName)) {
+					throw new DBAppException("Column not found in specified Table!");
+				}
+
+				// TODO: Update Metadata File
+				FileWriter fileWriter = new FileWriter("src" + File.separator + "MetaData.csv", true);
+				fileWriter.write(Colinfo + "\n");
+				fileWriter.close();
+
+				// TODO: Update Data File
+				fileWriter = new FileWriter("src" + File.separator + "Files.csv", true);
+				fileWriter.write(strTableName + "_" + strColName + "," + "SparseIndex" + "," + strTableName + strColName
+						+ ".csv" + "," + indexfile.getAbsolutePath());
+				fileWriter.close();
+
+				// TODO: create index and add values
+
+			} else {
+				throw new DBAppException("TABLE DOESN'T EXIST!");
+			}
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}
+
+	}
+
 	public void insertIntoTable(String strTableName,
 			Hashtable<String, Object> htblColNameValue) throws DBAppException, IOException {
 
@@ -210,7 +278,7 @@ public class DBApp {
 							}
 							Double min = (Double.parseDouble(indexed[6]));
 							Double max = (Double.parseDouble(indexed[7]));
-							if (indexed[0].equals(strTableName) && flag == false) {
+							if (indexed[0].equals(strTableName) && flag == false && !indexed[5].equals("SparseIndex")) {
 								clusterkeyindex++;
 								if (indexed[3].equals("True")) {
 									flag = true;
@@ -230,7 +298,8 @@ public class DBApp {
 
 							}
 
-							else if (indexed[1].equals(key) && indexed[0].equals(strTableName)) {
+							else if (indexed[1].equals(key) && indexed[0].equals(strTableName)
+									&& !indexed[5].equals("SparseIndex")) {
 								Object obj = htblColNameValue.get(key);
 								String str = obj.toString();
 								double value = Double.valueOf(str).doubleValue();
@@ -388,7 +457,8 @@ public class DBApp {
 
 							}
 
-						} else if (indexed[1].equals(hashkey) && indexed[0].equals(strTableName)) {
+						} else if (indexed[1].equals(hashkey) && indexed[0].equals(strTableName)
+								&& !indexed[5].equals("SparseIndex")) {
 							Object obj = htblColNameValue.get(hashkey);
 							String str = obj.toString();
 							double value = Double.valueOf(str).doubleValue();
@@ -570,11 +640,9 @@ public class DBApp {
 
 		TreeMap<Object, String> tmap = new TreeMap<Object, String>(rows);
 
-	
 		Set<Object> keys = tmap.keySet();
 		Iterator<Object> itr = keys.iterator();
 
-		
 		while (itr.hasNext()) {
 			Object i = itr.next();
 			fw.write(rows.get(i) + "\n");
@@ -591,6 +659,6 @@ public class DBApp {
 	public static void main(String[] args) throws IOException, DBAppException {
 
 		DBApp dbApp = new DBApp();
-	
+
 	}
 }
