@@ -179,17 +179,29 @@ public class DBApp {
 			String strColName) throws DBAppException {
 		File file = new File("src" + File.separator + "Tables" + File.separator + strTableName + "1.csv");
 		File indexfile = new File(
-				"src" + File.separator + "Indicies" + File.separator + strTableName + strColName + ".csv");
+				"src" + File.separator + "Indices" + File.separator + strTableName + strColName + ".csv");
 		String line = "";
 		String[] columns;
-		String[] row;
-		String Colinfo = "";
+		String[] Sparserow;
+		String[] Denserow;
+		String SparseColinfo = "";
+		String DenseColinfo = "";
 		List<String> coulmnlist = new ArrayList<>();
+		boolean isClusterkey = false;
+		boolean flag = false;
+		int clusterkeyindex = 0;
+		boolean Nonclusterflag = false;
+		int Nonclusterkeyindex = 0;
+		ArrayList<String> pages = new ArrayList<>();
+		File DenseIndexfile = new File("src" + File.separator + "Indices" + File.separator + strTableName +"."+ strColName+"."+"Dense.csv");
+
+		
 		try {
 			if (file.exists()) {
 				if (indexfile.exists()) {
 					throw new DBAppException("Index Already Exists!");
 				}
+				
 				BufferedReader maxreader = new BufferedReader(
 						new FileReader("src" + File.separator + "MetaData.csv"));
 				line = maxreader.readLine();
@@ -203,13 +215,43 @@ public class DBApp {
 					if (indexed[0].equals(strTableName)) {
 						coulmnlist.add(indexed[1]);
 					}
-					if (indexed[0].equals(strTableName) && indexed[1].equals(strColName)
-							&& !indexed[5].equals("SparseIndex")) {
-						row = indexed;
-						row[4] = strColName + "Index";
-						row[5] = "SparseIndex";
-						Colinfo = String.join(",", Colinfo);
 
+					// gets clusterkey index
+					if (indexed[0].equals(strTableName) && flag == false && !indexed[5].equals("SparseIndex")) {
+
+						clusterkeyindex++;
+						if (indexed[3].equals("True")) {
+							flag = true;
+							clusterkeyindex -= 1;
+						}
+					}
+					// gets clusterkey index
+					if (indexed[0].equals(strTableName) && Nonclusterflag == false && !indexed[5].equals("SparseIndex")) {
+
+						Nonclusterkeyindex++;
+						if (indexed[1].equals(strColName)) {
+							Nonclusterflag = true;
+							Nonclusterkeyindex -= 1;
+						}
+					}
+					// creates  metadata info
+					if (indexed[0].equals(strTableName) && indexed[1].equals(strColName)
+							&& !indexed[5].equals("SparseIndex")&& !indexed[5].equals("DenseIndex")) {
+						Sparserow = indexed;
+						Denserow = indexed;
+						Sparserow[4] = strColName + "Index";
+						Sparserow[5] = "SparseIndex";
+						Denserow[4] = strColName + "Index";
+						Denserow[5] = "DenseIndex";
+						SparseColinfo = String.join(",", Sparserow);
+						DenseColinfo = String.join(",", Denserow);
+
+					}
+
+					// checks if column is clusterkey or not
+					if (indexed[0].equals(strTableName) && indexed[1].equals(strColName)
+							&& indexed[3].equals("True")) {
+						isClusterkey = true;
 					}
 
 				}
@@ -219,26 +261,100 @@ public class DBApp {
 					throw new DBAppException("Column not found in specified Table!");
 				}
 
+
+				// TODO: create index and add values
+				if (isClusterkey) {
+					Boolean c = indexfile.createNewFile();
+					FileWriter fileWriter = new FileWriter(indexfile, true);
+					for (int i = 1; i < 10; i++) {
+						File check = new File("src" + File.separator + "Tables" + File.separator + strTableName + i + ".csv");
+						if (!check.exists()) {
+							continue;
+						}
+						maxreader = new BufferedReader(
+								new FileReader("src" + File.separator + "Tables" + File.separator + strTableName + i + ".csv"));
+						line = maxreader.readLine();
+						if ( line == null  || line.equals("")) {
+							break;
+						}
+						String[] indexed = line.split(",");
+						fileWriter.write(indexed[clusterkeyindex] + "," + strTableName + i + ".csv" + "\n");
+
+					}
+					fileWriter.close();
+
+				} else {
+					// TODO: create dense file
+					 DenseIndexfile.createNewFile();
+					FileWriter fileWriter = new FileWriter(DenseIndexfile, true);
+					 for(int i = 1;i< 10;i++){
+						File check = new File("src" + File.separator + "Tables" + File.separator + strTableName + i + ".csv");
+
+						if (!check.exists()) {
+							continue;
+						}
+						maxreader = new BufferedReader(
+								new FileReader("src" + File.separator + "Tables" + File.separator + strTableName + i + ".csv"));
+								while ((line = maxreader.readLine()) != null) {
+									if ( line == null  || line.equals("")) {
+										break;
+									}
+									String[] indexed = line.split(",");
+									fileWriter.write(indexed[Nonclusterkeyindex] + "," + strTableName + i + ".csv" + "\n" );
+
+									
+								}
+					 }
+				String	 DensePath = "src" + File.separator + "Indices" + File.separator + strTableName +"."+ strColName+"."+"Dense.csv";
+				fileWriter.close();
+				sorter(Nonclusterkeyindex, DensePath);
+					
+					
+
+					// TODO: Create sparse file
+					Boolean c = indexfile.createNewFile();
+					fileWriter = new FileWriter(indexfile, true);
+					maxreader = new BufferedReader(
+								new FileReader("src" + File.separator + "Indices" + File.separator + strTableName +"."+ strColName+"."+"Dense.csv"));
+								while ((line = maxreader.readLine()) != null) {
+									if ( line == null  || line.equals("")) {
+										break;
+									}
+									String[] indexed = line.split(",");
+									if (!pages.contains(indexed[1])) {
+										fileWriter.write(indexed[0] + ","+indexed[1] +"\n" );
+										pages.add(indexed[1]);
+									}
+									
+
+									
+								}
+								fileWriter.close();
+
+				}
+
 				// TODO: Update Metadata File
 				FileWriter fileWriter = new FileWriter("src" + File.separator + "MetaData.csv", true);
-				fileWriter.write(Colinfo + "\n");
+				fileWriter.write(SparseColinfo + "\n");
 				fileWriter.close();
 
 				// TODO: Update Data File
 				fileWriter = new FileWriter("src" + File.separator + "Files.csv", true);
-				fileWriter.write(strTableName + "_" + strColName + "," + "SparseIndex" + "," + strTableName + strColName
-						+ ".csv" + "," + indexfile.getAbsolutePath());
-				fileWriter.close();
+				fileWriter.write(strTableName + "_" + strColName + "," + "DenseIndex" + "," + strTableName+"." + strColName+"."+"Dense.csv" + "," + DenseIndexfile.getAbsolutePath() + "\n");
 
-				// TODO: create index and add values
+				fileWriter.write(strTableName + "_" + strColName + "," + "SparseIndex" + "," + strTableName + strColName
+						+ ".csv" + "," + indexfile.getAbsolutePath() + "\n");
+				fileWriter.close();
 
 			} else {
 				throw new DBAppException("TABLE DOESN'T EXIST!");
 			}
 
 		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
+			//if (!(e instanceof FileNotFoundException)) {
+				e.printStackTrace();
+				return;
+			//}
 		}
 
 	}
@@ -276,8 +392,7 @@ public class DBApp {
 							if (indexed[3].equals("True") && indexed[0].equals(strTableName)) {
 								clusterKey = (htblColNameValue.get(indexed[1])).toString();
 							}
-							Double min = (Double.parseDouble(indexed[6]));
-							Double max = (Double.parseDouble(indexed[7]));
+
 							if (indexed[0].equals(strTableName) && flag == false && !indexed[5].equals("SparseIndex")) {
 								clusterkeyindex++;
 								if (indexed[3].equals("True")) {
@@ -288,8 +403,11 @@ public class DBApp {
 
 							if ((htblColNameValue.get(key).getClass().getName()).equals("java.lang.String")
 									&& indexed[1].equals(key) && indexed[0].equals(strTableName)) {
-								if (((String) htblColNameValue.get(key)).length() < min
-										|| ((String) htblColNameValue.get(key)).length() > max) {
+								Double minString = (Double.parseDouble(String.valueOf(indexed[6].length())));
+								Double maxString = (Double.parseDouble(String.valueOf(indexed[7].length())));
+
+								if (((String) htblColNameValue.get(key)).length() < minString
+										|| ((String) htblColNameValue.get(key)).length() > maxString) {
 									System.out.println(((String) htblColNameValue.get(key)).length());
 
 									throw new DBAppException(key + " is not within Range!");
@@ -300,10 +418,12 @@ public class DBApp {
 
 							else if (indexed[1].equals(key) && indexed[0].equals(strTableName)
 									&& !indexed[5].equals("SparseIndex")) {
+								Double minNum = (Double.parseDouble(indexed[6]));
+								Double maxNum = (Double.parseDouble(indexed[7]));
 								Object obj = htblColNameValue.get(key);
 								String str = obj.toString();
 								double value = Double.valueOf(str).doubleValue();
-								if (value < min || value > max) {
+								if (value < minNum || value > maxNum) {
 
 									throw new DBAppException(key + " is not within Range!");
 								}
@@ -599,8 +719,11 @@ public class DBApp {
 					}
 
 				} catch (IOException x) {
-					// TODO Auto-generated catch block
-					x.printStackTrace();
+					if (e instanceof FileNotFoundException) {
+
+					} else {
+						x.printStackTrace();
+					}
 				}
 
 			}
@@ -659,6 +782,79 @@ public class DBApp {
 	public static void main(String[] args) throws IOException, DBAppException {
 
 		DBApp dbApp = new DBApp();
+		Hashtable<String, String> map = new Hashtable<String, String>();
+		map.put("same", new String("mostafa"));
+		map.put("gender", new String("m"));
+		map.put("age", new String("19"));
+		Hashtable<String, Object> map2 = new Hashtable<String, Object>();
+		map2.put("name", new String("mostafa"));
+		map2.put("gender", new String("m"));
+		map2.put("age", new String("30"));
+
+		Enumeration<String> e = map.keys();
+
+		while (e.hasMoreElements()) {
+
+			String key = e.nextElement();
+
+			// System.out.print(map.get(key) +",");
+
+		}
+		// dbApp.Tables.put("table", 1);
+
+		// dbApp.createTable("table", "id",map,map, map) ;
+		// dbApp.add();
+		// System.out.println(DBApp.Tables);
+		// dbApp.updateTable("table", "age", map2);
+		// dbApp.deleteFromTable("table", map2);
+		String strTableName = "Student";
+		Hashtable htblColNameType = new Hashtable();
+		Hashtable max = new Hashtable();
+		Hashtable min = new Hashtable();
+		Hashtable htblColNameValue = new Hashtable();
+		Hashtable htblColmin = new Hashtable();
+		Hashtable htblColmax = new Hashtable();
+
+		htblColmin.put("id", "0");
+		htblColmin.put("gpa", "0");
+		htblColmin.put("name", "A");
+		htblColmax.put("id", "10");
+		htblColmax.put("gpa", "10");
+		htblColmax.put("name", "ZZZZZZZZZZZ");
+		htblColNameType.put("id", "java.lang.Integer");
+		htblColNameType.put("name", "java.lang.String");
+		htblColNameType.put("gpa", "java.lang.Double");
+		// dbApp.createTable(strTableName, "id", htblColNameType,htblColmin,
+		// htblColmax);
+
+		htblColNameValue.put("id", new Integer(2343432));
+		htblColNameValue.put("name", new String("Ahmed Noor"));
+		htblColNameValue.put("gpa", new Double(0.95));
+		// dbApp.insertIntoTable( strTableName , htblColNameValue );
+		// htblColNameValue.clear();
+		// htblColNameValue.put("id", new Integer( 453455 ));
+		// htblColNameValue.put("name", new String("Ahmed Noor" ) );
+		// htblColNameValue.put("gpa", new Double( 0.95 ) ); dbApp.insertIntoTable(
+		// strTableName , htblColNameValue );
+		// htblColNameValue.clear( );
+		htblColNameValue.put("id", new Integer(13));
+		htblColNameValue.put("name", new String("Dalia Noor"));
+		htblColNameValue.put("gpa", new Double(1.76)); //
+		// htblColNameValue.put("id", new Integer(20));
+		// htblColNameValue.put("name", new String("mostafa"));
+		// htblColNameValue.put("gpa", new Double(1.40)); //
+		htblColNameValue.put("id", new Integer(7));
+		htblColNameValue.put("name", new String("abcd Noor"));
+		htblColNameValue.put("gpa", new Double(1));
+
+		//dbApp.insertIntoTable(strTableName, htblColNameValue);
+		// System.out.println(htblColNameValue);
+		// dbApp.deleteFromTable("Man", htblColNameValue);
+		// dbApp.updateTable(strTableName, "baky Noor", htblColNameValue);
+
+		System.out.println(File.separator);
+		
+		dbApp.createIndex( strTableName, new String ("gpa") );
 
 	}
 }
