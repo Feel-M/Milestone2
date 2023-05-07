@@ -2,3 +2,7 @@ Table Name,Colum Name,Colum Type,ClusteringKey,IndexName,IndexType,min,max
 Student,gpa,java.lang.Double,False,Null,Null,0,10
 Student,name,java.lang.String,False,Null,Null,A,ZZZZZZZZZZZ
 Student,id,java.lang.Integer,True,Null,Null,0,10
+Student,gpa,java.lang.Double,False,gpaIndex,DenseIndex,0,10
+Student,gpa,java.lang.Double,False,gpaIndex,SparseIndex,0,10
+Student,id,java.lang.Integer,True,idIndex,DenseIndex,0,10
+Student,id,java.lang.Integer,True,idIndex,SparseIndex,0,10
