@@ -1,3 +1,4 @@
+package M2;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -190,6 +191,7 @@ public class DBApp {
 		boolean Nonclusterflag = false;
 		int Nonclusterkeyindex = 0;
 		ArrayList<String> pages = new ArrayList<>();
+		String NonClusterType = "";
 		File DenseIndexfile = new File("src" + File.separator + "Indices" + File.separator + strTableName + "."
 				+ strColName + "." + "Dense.csv");
 
@@ -229,6 +231,7 @@ public class DBApp {
 						Nonclusterkeyindex++;
 						if (indexed[1].equals(strColName)) {
 							Nonclusterflag = true;
+							NonClusterType = indexed[2];
 							Nonclusterkeyindex -= 1;
 						}
 					}
@@ -310,7 +313,7 @@ public class DBApp {
 					String DensePath = "src" + File.separator + "Indices" + File.separator + strTableName + "."
 							+ strColName + "." + "Dense.csv";
 					fileWriter.close();
-					sorter(Nonclusterkeyindex, DensePath);
+					sorter(Nonclusterkeyindex, DensePath,NonClusterType);
 
 					// TODO: Create sparse file
 					Boolean c = indexfile.createNewFile();
@@ -371,6 +374,7 @@ public class DBApp {
 		int clusterkeyindex = 0;
 		boolean flag = false;
 		String path = "";
+		String clusterType = "";
 
 		try {
 			if (file.exists()) {
@@ -399,6 +403,7 @@ public class DBApp {
 								clusterkeyindex++;
 								if (indexed[3].equals("True")) {
 									flag = true;
+									clusterType = indexed[2];
 									clusterkeyindex -= 1;
 								}
 							}
@@ -502,7 +507,7 @@ public class DBApp {
 							fileWriter.flush();
 							fileWriter.close();
 							bw.close();
-							sorter(clusterkeyindex, path);
+							sorter(clusterkeyindex, path,clusterType);
 							UpdateIndex(strTableName);
 							break;
 
@@ -555,6 +560,7 @@ public class DBApp {
 		String line = "";
 		int clusterkeyindex= 0;
 		boolean Clusterflag = false;
+		String clusterType = "";
 		
 		if (file.exists()) {
 			// here\
@@ -577,6 +583,7 @@ public class DBApp {
 							clusterkeyindex++;
 							if (indexed[3].equals("True")) {
 								 Clusterflag = true;
+								  clusterType = indexed[2];
 								clusterkeyindex -= 1;
 							}
 						}
@@ -665,7 +672,7 @@ public class DBApp {
 					renamefile.canWrite();
 					renamefile.renameTo(new File("src" + File.separator + "Tables" + File.separator + current));
 					String path = "src" + File.separator + "Tables" + File.separator + current;
-					sorter(clusterkeyindex, path);
+					sorter(clusterkeyindex, path,clusterType);
 					UpdateIndex(strTableName);
 
 				} catch (IOException e) {
@@ -771,17 +778,42 @@ public class DBApp {
 		return result;
 	}
 
-	public static void sorter(int index, String path) throws IOException {
-		Hashtable<Object, String> rows = new Hashtable<Object, String>();
+	public static void sorter(int index, String path,String type) throws IOException {
 
 		BufferedReader reader = new BufferedReader(new FileReader(path));
 		String line;
 		String newfile = "new.csv";
+		Hashtable rows = new Hashtable<>();
+
 		FileWriter fw = new FileWriter("src" + File.separator + "Tables" + File.separator + newfile);
+		if(type.equals("java.lang.Integer")){
+			 rows = new Hashtable<Integer, String>();
+
+		}
+		else if (type.equals("java.lang.Double")){
+			 rows = new Hashtable<Double, String>();
+
+		}else{
+			 rows = new Hashtable<Object, String>();
+
+		}
 
 		while ((line = reader.readLine()) != null) {
 			String[] indexed = line.split(",");
-			rows.put(indexed[index], line);
+			if(type.equals("java.lang.Integer")){
+				int key = Integer.valueOf(indexed[index].toString());
+				rows.put(key, line);
+			
+			}
+			else if (type.equals("java.lang.Double")){
+				double key = Double.valueOf(indexed[index].toString());
+				rows.put(key, line);
+			
+			}else{
+				rows.put(indexed[index], line);
+		
+			}
+			
 
 		}
 		reader.close();
@@ -809,6 +841,9 @@ public class DBApp {
 		ArrayList SparseColumns = new ArrayList<>();
 		String line="";
 		ArrayList<String> pages = new ArrayList<>();
+		String Clustertype = "";
+		String NonClustertype = "";
+
 
 
 	
@@ -855,13 +890,14 @@ public class DBApp {
 						Nonclusterkeyindex++;
 						if (indexed[1].equals(denseColumns.get(i))) {
 							Nonclusterflag = true;
+							NonClustertype = indexed[2];
 							Nonclusterkeyindex -= 1;
 						}
 					}}
 				}
 
 				for(int i = 0;i< denseColumns.size();i++){
-					if (SparseColumns.contains(denseColumns.get(i))) {
+					if (!SparseColumns.contains(denseColumns.get(i))) {
 						continue;
 					}
 					File DenseIndexfile = new File("src" + File.separator + "Indices" + File.separator + strTableName + "."
@@ -890,7 +926,7 @@ public class DBApp {
 					String DensePath = "src" + File.separator + "Indices" + File.separator + strTableName + "."
 							+ denseColumns.get(i) + "." + "Dense.csv";
 					fileWriter.close();
-					sorter(Nonclusterkeyindex, DensePath);
+					sorter(Nonclusterkeyindex, DensePath,NonClustertype);
 					File indexfile = new File(
 				"src" + File.separator + "Indices" + File.separator + strTableName + denseColumns.get(i) + ".csv");
 					fileWriter = new FileWriter(indexfile);
@@ -917,7 +953,9 @@ public class DBApp {
 					if (!indexfile.exists()) {
 						continue;
 					}
-						
+					if (denseColumns.contains(SparseColumns.get(i))) {
+						continue;
+					}
 					FileWriter fileWriter = new FileWriter(indexfile);
 					for (int j = 1; j < 10; j++) {
 						File check = new File(
@@ -1014,18 +1052,20 @@ public class DBApp {
 		// htblColNameValue.put("id", new Integer(20));
 		// htblColNameValue.put("name", new String("mostafa"));
 		// htblColNameValue.put("gpa", new Double(1.40)); //
-		htblColNameValue.put("id", new Integer(9));
-		htblColNameValue.put("name", new String("malak"));
-		htblColNameValue.put("gpa", new Double(3));
+		htblColNameValue.put("id", new Integer(10));
+		htblColNameValue.put("name", new String("zed"));
+		htblColNameValue.put("gpa", new Double(9));
 
-		// dbApp.insertIntoTable(strTableName, htblColNameValue);
+		//dbApp.insertIntoTable(strTableName, htblColNameValue);
 		// System.out.println(htblColNameValue);
 		 //dbApp.deleteFromTable(strTableName, htblColNameValue);
-		 dbApp.updateTable(strTableName, "6", htblColNameValue);
+		//dbApp.updateTable(strTableName, "9", htblColNameValue);
 
 		System.out.println(File.separator);
 
-		//dbApp.createIndex(strTableName, new String("id"));
+		//dbApp.createIndex(strTableName, new String("gpa"));
+
+
 
 	}
 }
