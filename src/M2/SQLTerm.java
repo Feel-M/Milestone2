@@ -10,7 +10,7 @@ public class SQLTerm {
 
     }
 
-    public SQLTerm(String strOperator, String strTableName, Object objValue, String strColumnName)
+    public SQLTerm(String strTableName,String strColumnName,String strOperator,  Object objValue )
             throws DBAppException {
         _strTableName = strTableName;
         _objValue = objValue;
