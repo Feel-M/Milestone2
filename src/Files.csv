@@ -1,6 +1,0 @@
-Name,Type,FileName,FileLocationonHarddisk
-Student,Table,Student1.csv,/Users/Mostafa/Desktop/Milestone2/src/Tables/Student1.csv
-Student,Table,Student2.csv,/Users/Mostafa/Desktop/Milestone2/src/Tables/Student2.csvStudent_id,SparseIndex,Studentid.csv,/Users/Mostafa/Desktop/Milestone2/src/Indices/Studentid.csv
-Student_id,SparseIndex,Studentid.csv,/Users/Mostafa/Desktop/Milestone2/src/Indices/Studentid.csv
-Student_gpa,DenseIndex,Student.gpa.Dense.csv,/Users/Mostafa/Desktop/Milestone2/src/Indices/Student.gpa.Dense.csv
-Student_gpa,SparseIndex,Studentgpa.csv,/Users/Mostafa/Desktop/Milestone2/src/Indices/Studentgpa.csv
