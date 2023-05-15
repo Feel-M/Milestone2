@@ -41,7 +41,7 @@ public class DBApp {
 				fileWriter.write(strTableName + ",");
 				fileWriter.write(keytype + ",");
 				try {
-					String[] types = { "java.lang.Integer", "java.lang.Double", "java,lang.Date", "java.lang.String" };
+					String[] types = { "java.lang.Integer", "java.lang.Double", "java.lang.Date", "java.lang.String" };
 
 					if (check(types, htblColNameType.get(keytype))) {
 						fileWriter.write(htblColNameType.get(keytype) + ",");
@@ -339,19 +339,37 @@ public class DBApp {
 				}
 
 				// TODO: Update Metadata File
-				FileWriter fileWriter = new FileWriter("src" + File.separator + "MetaData.csv", true);
-				fileWriter.write(DenseColinfo + "\n");
-				fileWriter.write(SparseColinfo + "\n");
-				fileWriter.close();
+				if (isClusterkey) {
+					FileWriter fileWriter = new FileWriter("src" + File.separator + "MetaData.csv", true);
+					fileWriter.write(SparseColinfo + "\n");
+					fileWriter.close();
+				} else {
+					FileWriter fileWriter = new FileWriter("src" + File.separator + "MetaData.csv", true);
+					fileWriter.write(DenseColinfo + "\n");
+					fileWriter.write(SparseColinfo + "\n");
+					fileWriter.close();
+
+				}
+				
+				
 
 				// TODO: Update Data File
-				fileWriter = new FileWriter("src" + File.separator + "Files.csv", true);
-				fileWriter.write(strTableName + "_" + strColName + "," + "DenseIndex" + "," + strTableName + "."
-						+ strColName + "." + "Dense.csv" + "," + DenseIndexfile.getAbsolutePath() + "\n");
+				if (isClusterkey) {
+				FileWriter	fileWriter = new FileWriter("src" + File.separator + "Files.csv", true);
 
+					fileWriter.write(strTableName + "_" + strColName + "," + "SparseIndex" + "," + strTableName + strColName
+					+ ".csv" + "," + indexfile.getAbsolutePath() + "\n");
+			fileWriter.close();
+				} else {
+				FileWriter	fileWriter = new FileWriter("src" + File.separator + "Files.csv", true);
+				fileWriter.write(strTableName + "_" + strColName + "," + "DenseIndex" + "," + strTableName + "."
+				+ strColName + "." + "Dense.csv" + "," + DenseIndexfile.getAbsolutePath() + "\n");
 				fileWriter.write(strTableName + "_" + strColName + "," + "SparseIndex" + "," + strTableName + strColName
-						+ ".csv" + "," + indexfile.getAbsolutePath() + "\n");
+					+ ".csv" + "," + indexfile.getAbsolutePath() + "\n");
 				fileWriter.close();
+				}
+			
+			
 
 			} else {
 				throw new DBAppException("TABLE DOESN'T EXIST!");
@@ -1140,6 +1158,7 @@ public class DBApp {
 				}
 				fileWriter.close();
 			}
+maxreader.close();
 
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -1314,14 +1333,14 @@ public class DBApp {
 		// htblColNameValue.put("id", new Integer(20));
 		// htblColNameValue.put("name", new String("mostafa"));
 		// htblColNameValue.put("gpa", new Double(1.40)); //
-		htblColNameValue.put("id", new Integer(10));
-		htblColNameValue.put("name", new String("zed"));
-		htblColNameValue.put("gpa", new Double(9));
+		htblColNameValue.put("id", new Integer(11));
+		htblColNameValue.put("name", new String("med"));
+		htblColNameValue.put("gpa", new Double(1.5));
 
 		// dbApp.insertIntoTable(strTableName, htblColNameValue);
 		// System.out.println(htblColNameValue);
 		// dbApp.deleteFromTable(strTableName, htblColNameValue);
-		// dbApp.updateTable(strTableName, "9", htblColNameValue);
+		 dbApp.updateTable(strTableName, "11", htblColNameValue);
 
 		System.out.println(File.separator);
 
@@ -1333,14 +1352,5 @@ public class DBApp {
 		arrSQLTerms[1] = new SQLTerm("Student", "id", "=", "4");
 		arrSQLTerms[2] = new SQLTerm("Student", "id", "=", "4");
 
-		String[] strarrOperators = new String[2];
-		strarrOperators[0] = "OR";
-		//strarrOperators[1] = "AND";
-
-		Iterator resultSet = dbApp.selectFromTable(arrSQLTerms, strarrOperators);
-
-		while (resultSet.hasNext()) {
-			System.out.print(resultSet.next() + "\n");
-		}
 	}
 }
